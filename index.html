@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberApolis Desktop ROM Estimator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3350;
+      --accent: #4f6ef7;
+      --accent-glow: rgba(79,110,247,0.18);
+      --text: #e8eaf6;
+      --text-muted: #8b90b0;
+      --text-dim: #555a7a;
+      --green: #3ecf8e;
+      --amber: #f5a623;
+      --red: #e05c5c;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px 60px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 560px;
+      padding: 36px 32px 32px;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+    }
+
+    /* ── Header ── */
+    .header { margin-bottom: 28px; }
+    .header h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .header .subtitle {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .header .disclaimer {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      background: var(--surface2);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 10px 14px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Form ── */
+    .form-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .field input,
+    .field select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 10px 13px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b90b0' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .field input[readonly],
+    .field input:disabled {
+      color: var(--text-dim);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .field input[type="number"]::-webkit-inner-spin-button,
+    .field input[type="number"]::-webkit-outer-spin-button { opacity: 0.4; }
+
+    /* Checkbox — must NOT inherit the input reset rules */
+    .field input[type="checkbox"] {
+      appearance: auto;
+      -webkit-appearance: auto;
+      background: revert;
+      border: revert;
+      padding: revert;
+      width: 15px;
+      height: 15px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: none;
+      box-shadow: none;
+    }
+    .field input[type="checkbox"]:focus {
+      border: revert;
+      box-shadow: none;
+    }
+
+    .field .hint {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 2px;
+      margin-top: 4px;
+    }
+
+    /* ── Results ── */
+    .results {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 28px;
+    }
+    .results-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .result-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .result-row .label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .result-row .sub {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+    .result-row .value {
+      font-size: 1rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      text-align: right;
+    }
+    .result-row.total .label { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .result-row.total .value { font-size: 1.25rem; color: var(--green); }
+
+    .placeholder-msg {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    /* ── Copy button ── */
+    .copy-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .btn-copy:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: var(--accent-glow);
+    }
+    .btn-copy.copied {
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .btn-copy svg { flex-shrink: 0; }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 28px;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="subtitle">AWS</div>
+    <h1>Desktop ROM Estimator</h1>
+    <p class="disclaimer">
+      This calculator provides ROM-level estimates only for specific AWS virtual desktop environments.
+      All figures are planning values based on AWS on-demand pricing and should not be treated as
+      final quotes or contractual commitments.
+    </p>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Form -->
+  <div class="form-grid">
+
+    <div class="section-label">Environment</div>
+
+    <div class="field">
+      <label for="region">Region</label>
+      <input id="region" type="text" value="US West (Oregon)" readonly />
+    </div>
+
+    <div class="field">
+      <label for="os">OS / Platform</label>
+      <select id="os">
+        <option value="linux">Linux</option>
+        <option value="windows" selected>Windows</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="instance">Instance Type</label>
+      <select id="instance">
+        <option value="" disabled selected>— Select an instance —</option>
+        <option value="t3a.large">t3a.large</option>
+        <option value="t3a.xlarge">t3a.xlarge</option>
+        <option value="m5.xlarge">m5.xlarge</option>
+        <option value="g4ad.xlarge">g4ad.xlarge</option>
+      </select>
+    </div>
+
+    <div class="field" id="marketplace-field" style="display:none">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.88rem;font-weight:500;color:var(--text-muted)">
+        <input type="checkbox" id="marketplace-ubuntu" />
+        Marketplace Ubuntu? <span style="font-size:0.72rem;color:var(--text-dim);margin-left:4px">(+$0.05/hr)</span>
+      </label>
+    </div>
+
+    <hr class="divider" style="margin:4px 0" />
+    <div class="section-label">Storage</div>
+
+    <div class="field">
+      <label for="persistent">Persistent Drive (GB) — gp2</label>
+      <input id="persistent" type="number" value="1" readonly />
+      <span class="hint">Fixed 1 GB · $0.10/GB/mo · not editable</span>
+    </div>
+
+    <div class="field">
+      <label for="desktop">Desktop Volume (GB) — gp3</label>
+      <input id="desktop" type="number" value="100" min="1" max="10000" />
+      <span class="hint">1 – 10,000 GB · $0.08/GB/mo</span>
+    </div>
+
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <div class="results-title">Estimate</div>
+    <div class="placeholder-msg" id="placeholder">Select an instance type to see your estimate.</div>
+
+    <div id="result-rows" style="display:none">
+      <div class="result-row">
+        <div>
+          <div class="label">EC2 Compute — 1 week</div>
+          <div class="sub" id="ec2-sub"></div>
+        </div>
+        <div class="value" id="ec2-val"></div>
+      </div>
+      <div class="result-row">
+        <div>
+          <div class="label">EBS Storage — 1 month</div>
+          <div class="sub" id="ebs-sub"></div>
+        </div>
+        <div class="value" id="ebs-val"></div>
+      </div>
+      <div class="result-row total">
+        <div>
+          <div class="label">Monthly Total</div>
+          <div class="sub" style="font-size:0.7rem;color:var(--text-dim)">EC2 × 4 wks + EBS · incl. 9% tax</div>
+        </div>
+        <div class="value" id="total-val"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copy button -->
+  <div class="copy-row">
+    <button class="btn-copy" id="copy-btn" onclick="copyEstimate()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H3.5A1.5 1.5 0 0 0 2 3.5V9.5A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      Copy Summary
+    </button>
+  </div>
+
+  <div class="footer">
+    Pricing based on AWS on-demand rates · us-west-2 · 40 hr/week EC2 · 1-month EBS (gp2 persistent + gp3 desktop) · 9% tax applied
+  </div>
+
+</div>
+
+<script>
+  const RATES = {
+    't3a.large':  { windows: 0.1028,   linux: 0.0752  },
+    't3a.xlarge': { windows: 0.224,    linux: 0.1504  },
+    'm5.xlarge':  { windows: 0.376,    linux: 0.192   },
+    'g4ad.xlarge':{ windows: 0.56253,  linux: 0.37853 },
+  };
+
+  const EBS_GP2_RATE = 0.10; // $/GB/month — persistent drive only
+  const EBS_GP3_RATE = 0.08; // $/GB/month — desktop volume only
+  const MARKETPLACE_UBUNTU_RATE = 0.05; // $/hr addon (Linux only)
+  const TAX = 0.09;
+  const EC2_HOURS = 40;
+
+  function fmt(n) {
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function calc() {
+    const instance  = document.getElementById('instance').value;
+    const os        = document.getElementById('os').value;
+    const gbPersist = parseFloat(document.getElementById('persistent').value) || 1;
+    const gbDesktop = parseFloat(document.getElementById('desktop').value) || 0;
+
+    const placeholder = document.getElementById('placeholder');
+    const resultRows  = document.getElementById('result-rows');
+
+    if (!instance) {
+      placeholder.style.display = '';
+      resultRows.style.display  = 'none';
+      return;
+    }
+
+    placeholder.style.display = 'none';
+    resultRows.style.display  = '';
+
+    const baseRate           = RATES[instance][os];
+    const marketplaceChecked = os === 'linux' && document.getElementById('marketplace-ubuntu').checked;
+    const effectiveRate      = baseRate + (marketplaceChecked ? MARKETPLACE_UBUNTU_RATE : 0);
+
+    // EC2: 40 hrs × effective rate × (1 + tax)
+    const ec2Total = effectiveRate * EC2_HOURS * (1 + TAX);
+
+    // EBS: persistent drive on gp2, desktop volume on gp3 — priced independently
+    const ebsGp2Total = gbPersist * EBS_GP2_RATE * (1 + TAX);
+    const ebsGp3Total = gbDesktop * EBS_GP3_RATE * (1 + TAX);
+    const ebsTotal    = ebsGp2Total + ebsGp3Total;
+
+    // Monthly total: 4 weeks of EC2 + one month of EBS
+    const monthlyTotal = (ec2Total * 4) + ebsTotal;
+
+    const osLabel = os === 'windows' ? 'Windows' : 'Linux';
+    const rateLabel = marketplaceChecked
+      ? `${fmt(baseRate)}/hr + $0.05 Marketplace = ${fmt(effectiveRate)}/hr`
+      : `${fmt(effectiveRate)}/hr`;
+
+    document.getElementById('ec2-sub').textContent =
+      `${instance} · ${osLabel} · ${rateLabel} × ${EC2_HOURS} hrs + 9% tax`;
+    document.getElementById('ec2-val').textContent = fmt(ec2Total);
+
+    document.getElementById('ebs-sub').textContent =
+      `gp2: ${gbPersist} GB × $0.10  +  gp3: ${gbDesktop} GB × $0.08  +  9% tax`;
+    document.getElementById('ebs-val').textContent = fmt(ebsTotal);
+
+    document.getElementById('total-val').textContent = fmt(monthlyTotal);
+  }
+
+  function copyEstimate() {
+    const instance  = document.getElementById('instance').value;
+    const os        = document.getElementById('os').value;
+    const gbPersist = parseFloat(document.getElementById('persistent').value) || 1;
+    const gbDesktop = parseFloat(document.getElementById('desktop').value) || 0;
+
+    if (!instance) {
+      alert('Please select an instance type before copying.');
+      return;
+    }
+
+    const osLabel            = os === 'windows' ? 'Windows' : 'Linux';
+    const baseRate           = RATES[instance][os];
+    const marketplaceChecked = os === 'linux' && document.getElementById('marketplace-ubuntu').checked;
+    const effectiveRate      = baseRate + (marketplaceChecked ? MARKETPLACE_UBUNTU_RATE : 0);
+
+    const ec2Total    = effectiveRate * EC2_HOURS * (1 + TAX);
+    const ebsGp2Total = gbPersist * EBS_GP2_RATE * (1 + TAX);
+    const ebsGp3Total = gbDesktop * EBS_GP3_RATE * (1 + TAX);
+    const ebsTotal    = ebsGp2Total + ebsGp3Total;
+    const monthlyTotal = (ec2Total * 4) + ebsTotal;
+
+    const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const marketplaceLine = marketplaceChecked ? `  Marketplace Ubuntu:  Yes (+$0.05/hr)` : null;
+    const rateLabel = marketplaceChecked
+      ? `${fmt(baseRate)}/hr + $0.05 Marketplace = ${fmt(effectiveRate)}/hr`
+      : `${fmt(effectiveRate)}/hr`;
+
+    const lines = [
+      '── AWS Desktop ROM Estimate ──',
+      `Generated: ${now}`,
+      '',
+      'Configuration',
+      `  Region:              US West (Oregon)`,
+      `  OS / Platform:       ${osLabel}`,
+      `  Instance Type:       ${instance}`,
+      marketplaceLine,
+      `  Persistent Drive:    ${gbPersist} GB (gp2 · $0.10/GB/mo)`,
+      `  Desktop Volume:      ${gbDesktop} GB (gp3 · $0.08/GB/mo)`,
+      '',
+      'Estimate (ROM-level, incl. 9% tax)',
+      `  EC2 Compute (1 wk):  ${fmt(ec2Total)}`,
+      `    ${instance} · ${osLabel} · ${rateLabel} × ${EC2_HOURS} hrs`,
+      '',
+      `  EBS Storage (1 mo):  ${fmt(ebsTotal)}`,
+      `    gp2: ${gbPersist} GB × $0.10  +  gp3: ${gbDesktop} GB × $0.08`,
+      '',
+      `  MONTHLY TOTAL:       ${fmt(monthlyTotal)}`,
+      `    (EC2 × 4 wks + EBS)`,
+      '',
+      'Note: ROM-level estimate only. Not a final quote.',
+    ].filter(l => l !== null).join('\n');
+
+    navigator.clipboard.writeText(lines).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.classList.add('copied');
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H3.5A1.5 1.5 0 0 0 2 3.5V9.5A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Copy Summary`;
+      }, 2500);
+    });
+  }
+
+  // Show/hide Marketplace Ubuntu checkbox; clear it when switching away from Linux
+  function updateMarketplaceVisibility() {
+    const os = document.getElementById('os').value;
+    document.getElementById('marketplace-field').style.display = os === 'linux' ? '' : 'none';
+    if (os !== 'linux') document.getElementById('marketplace-ubuntu').checked = false;
+    calc();
+  }
+
+  // Wire up inputs
+  document.getElementById('os').addEventListener('change', updateMarketplaceVisibility);
+  document.getElementById('marketplace-ubuntu').addEventListener('change', calc);
+  ['instance', 'desktop'].forEach(id => {
+    document.getElementById(id).addEventListener('change', calc);
+    document.getElementById(id).addEventListener('input', calc);
+  });
+
+  // Initial state (Windows selected by default — marketplace hidden)
+  updateMarketplaceVisibility();
+</script>
+</body>
+</html>
