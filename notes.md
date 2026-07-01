@@ -12,3 +12,8 @@
 2. Edit `update_pricing.py` around line 30
     - Add to `INSTANCES = ["t3a.large", "t3a.xlarge", "m5.xlarge", "g4ad.xlarge"]`
     - Add to `r"(t3a\.large|t3a\.xlarge|m5\.xlarge|g4ad\.xlarge) Instance Hour"`
+
+# NOTE: EBS pricing is still 100% manual
+
+# TO DOs
+- include EBS in the pricing update process

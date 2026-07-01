@@ -150,6 +150,11 @@
       box-shadow: none;
     }
 
+    .field select option:disabled {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
     .field .hint {
       font-size: 0.74rem;
       color: var(--text-dim);
@@ -298,7 +303,7 @@
     <div class="field">
       <label for="instance">Instance Type</label>
       <select id="instance">
-        <option value="" disabled selected>— Select an instance —</option>
+        <option value="" selected>— Select an instance —</option>
         <option value="t3a.large">t3a.large</option>
         <option value="t3a.xlarge">t3a.xlarge</option>
         <option value="m5.xlarge">m5.xlarge</option>
