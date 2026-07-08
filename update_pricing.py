@@ -25,13 +25,13 @@ INDEX_HTML = os.path.join(SCRIPT_DIR, "index.html")
 STATE_FILE = os.path.join(SCRIPT_DIR, ".pricing_state.json")
 
 # Instance types this project tracks (must match the keys in index.html's RATES table)
-INSTANCES = ["t3a.large", "t3a.xlarge", "m5.xlarge", "g4ad.xlarge"]
+INSTANCES = ["t3a.large", "t3a.xlarge", "m5.xlarge", "g4ad.xlarge", "g4dn.xlarge"]
 OSES = ["Windows", "Linux"]
 
 # Matches: $0.0752 per On Demand Linux t3a.large Instance Hour
 PRICE_RE = re.compile(
     r"\$(\d+(?:\.\d+)?)\s+per\s+On Demand (Windows|Linux) "
-    r"(t3a\.large|t3a\.xlarge|m5\.xlarge|g4ad\.xlarge) Instance Hour"
+    r"(t3a\.large|t3a\.xlarge|m5\.xlarge|g4ad\.xlarge|g4dn\.xlarge) Instance Hour"
 )
 
 
