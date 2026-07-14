@@ -17,3 +17,4 @@
 
 # TO DOs
 - include EBS in the pricing update process
+- make Skald pricing more dynamic

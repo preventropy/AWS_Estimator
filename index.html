@@ -29,10 +29,29 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
       padding: 40px 16px 60px;
+    }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      max-width: 1152px;
+      margin: 0 auto 28px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      background: var(--surface2);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 10px 14px;
+    }
+
+    /* ── Card grid ── */
+    .page {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+      align-items: flex-start;
     }
 
     .card {
@@ -61,15 +80,6 @@
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 14px;
-    }
-    .header .disclaimer {
-      font-size: 0.84rem;
-      color: var(--text-muted);
-      line-height: 1.55;
-      background: var(--surface2);
-      border-left: 3px solid var(--accent);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      padding: 10px 14px;
     }
 
     /* ── Divider ── */
@@ -150,11 +160,6 @@
       box-shadow: none;
     }
 
-    .field select option:disabled {
-      color: var(--text);
-      background: var(--surface2);
-    }
-
     .field .hint {
       font-size: 0.74rem;
       color: var(--text-dim);
@@ -169,6 +174,49 @@
       color: var(--text-dim);
       margin-bottom: 2px;
       margin-top: 4px;
+    }
+
+    /* ── Checkbox group ── */
+    .check-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .check-item:hover {
+      border-color: var(--accent);
+      background: rgba(79,110,247,0.06);
+    }
+    .check-item input[type="checkbox"] {
+      appearance: auto;
+      -webkit-appearance: auto;
+      width: 15px;
+      height: 15px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .check-item .check-label {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .check-item .check-price {
+      margin-left: auto;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
     }
 
     /* ── Results ── */
@@ -267,134 +315,219 @@
   </style>
 </head>
 <body>
-<div class="card">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="subtitle">AWS</div>
-    <h1>Desktop ROM Estimator</h1>
-    <p class="disclaimer">
-      This calculator provides ROM-level estimates only for specific AWS virtual desktop environments.
-      All figures are planning values and should not be treated as
-      final quotes or contractual commitments.
-    </p>
-  </div>
+<div class="disclaimer">
+  These calculators provide ROM-level estimates only for a specific AWS environment.
+  All figures are planning values and should not be treated as
+  final quotes or contractual commitments.
+</div>
 
-  <hr class="divider" />
+<div class="page">
 
-  <!-- Form -->
-  <div class="form-grid">
+  <!-- ═══════════ Desktop ROM Estimator ═══════════ -->
+  <div class="card">
 
-    <div class="section-label">Environment</div>
-
-    <div class="field">
-      <label for="region">Region</label>
-      <input id="region" type="text" value="US West (Oregon)" readonly />
+    <div class="header">
+      <div class="subtitle">AWS</div>
+      <h1>Desktop ROM Estimator</h1>
     </div>
 
-    <div class="field">
-      <label for="os">OS / Platform</label>
-      <select id="os">
-        <option value="linux">Linux</option>
-        <option value="windows" selected>Windows</option>
-      </select>
-    </div>
+    <hr class="divider" />
 
-    <div class="field">
-      <label for="instance">Instance Type</label>
-      <select id="instance">
-        <option value="" selected>— Select an instance —</option>
-        <option value="t3a.large">t3a.large</option>
-        <option value="t3a.xlarge">t3a.xlarge</option>
-        <option value="m5.xlarge">m5.xlarge</option>
-        <option value="g4ad.xlarge">g4ad.xlarge</option>
-        <option value="g4dn.xlarge">g4dn.xlarge</option>
-      </select>
-    </div>
+    <div class="form-grid">
 
-    <div class="field" id="marketplace-field" style="display:none">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.88rem;font-weight:500;color:var(--text-muted)">
-        <input type="checkbox" id="marketplace-ubuntu" />
-        Marketplace Ubuntu? <span style="font-size:0.72rem;color:var(--text-dim);margin-left:4px">(+$0.05/hr)</span>
-      </label>
-    </div>
+      <div class="section-label">Environment</div>
 
-    <hr class="divider" style="margin:4px 0" />
-    <div class="section-label">Storage</div>
-
-    <div class="field">
-      <label for="persistent">Persistent Drive (GB) — gp2</label>
-      <input id="persistent" type="number" value="1" readonly />
-      <span class="hint">Fixed 1 GB · $0.10/GB/mo · not editable</span>
-    </div>
-
-    <div class="field">
-      <label for="desktop">Desktop Volume (GB) — gp3</label>
-      <input id="desktop" type="number" value="100" min="1" max="10000" />
-      <span class="hint">1 – 10,000 GB · $0.08/GB/mo</span>
-    </div>
-
-  </div>
-
-  <!-- Results -->
-  <div class="results" id="results">
-    <div class="results-title">Estimate</div>
-    <div class="placeholder-msg" id="placeholder">Select an instance type to see your estimate.</div>
-
-    <div id="result-rows" style="display:none">
-      <div class="result-row">
-        <div>
-          <div class="label">EC2 Compute — 1 week</div>
-          <div class="sub" id="ec2-sub"></div>
-        </div>
-        <div class="value" id="ec2-val"></div>
+      <div class="field">
+        <label for="region">Region</label>
+        <input id="region" type="text" value="US West (Oregon)" readonly />
       </div>
-      <div class="result-row">
-        <div>
-          <div class="label">EBS Storage — 1 month</div>
-          <div class="sub" id="ebs-sub"></div>
-        </div>
-        <div class="value" id="ebs-val"></div>
+
+      <div class="field">
+        <label for="os">OS / Platform</label>
+        <select id="os">
+          <option value="linux">Linux</option>
+          <option value="windows" selected>Windows</option>
+        </select>
       </div>
-      <div class="result-row total">
-        <div>
-          <div class="label">Monthly Total</div>
-          <div class="sub" style="font-size:0.7rem;color:var(--text-dim)">EC2 × 4 wks + EBS · incl. 9% tax</div>
+
+      <div class="field">
+        <label for="instance">Instance Type</label>
+        <select id="instance">
+          <option value="" selected>— Select an instance —</option>
+          <option value="t3a.large">t3a.large</option>
+          <option value="t3a.xlarge">t3a.xlarge</option>
+          <option value="m5.xlarge">m5.xlarge</option>
+          <option value="g4ad.xlarge">g4ad.xlarge</option>
+          <option value="g4dn.xlarge">g4dn.xlarge</option>
+        </select>
+      </div>
+
+      <div class="field" id="marketplace-field" style="display:none">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.88rem;font-weight:500;color:var(--text-muted)">
+          <input type="checkbox" id="marketplace-ubuntu" />
+          Marketplace Ubuntu? <span style="font-size:0.72rem;color:var(--text-dim);margin-left:4px">(+$0.05/hr)</span>
+        </label>
+      </div>
+
+      <hr class="divider" style="margin:4px 0" />
+      <div class="section-label">Storage</div>
+
+      <div class="field">
+        <label for="persistent">Persistent Drive (GB) — gp2</label>
+        <input id="persistent" type="number" value="1" readonly />
+        <span class="hint">Fixed 1 GB · $0.10/GB/mo · not editable</span>
+      </div>
+
+      <div class="field">
+        <label for="desktop">Desktop Volume (GB) — gp3</label>
+        <input id="desktop" type="number" value="100" min="1" max="10000" />
+        <span class="hint">1 – 10,000 GB · $0.08/GB/mo</span>
+      </div>
+
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="results">
+      <div class="results-title">Estimate</div>
+      <div class="placeholder-msg" id="placeholder">Select an instance type to see your estimate.</div>
+
+      <div id="result-rows" style="display:none">
+        <div class="result-row">
+          <div>
+            <div class="label">EC2 Compute — 1 week</div>
+            <div class="sub" id="ec2-sub"></div>
+          </div>
+          <div class="value" id="ec2-val"></div>
         </div>
-        <div class="value" id="total-val"></div>
+        <div class="result-row">
+          <div>
+            <div class="label">EBS Storage — 1 month</div>
+            <div class="sub" id="ebs-sub"></div>
+          </div>
+          <div class="value" id="ebs-val"></div>
+        </div>
+        <div class="result-row total">
+          <div>
+            <div class="label">Monthly Total</div>
+            <div class="sub" style="font-size:0.7rem;color:var(--text-dim)">EC2 × 4 wks + EBS · incl. 9% tax</div>
+          </div>
+          <div class="value" id="total-val"></div>
+        </div>
       </div>
     </div>
+
+    <!-- Copy button -->
+    <div class="copy-row">
+      <button class="btn-copy" id="copy-btn" onclick="copyEstimate()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H3.5A1.5 1.5 0 0 0 2 3.5V9.5A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Copy Summary
+      </button>
+    </div>
+
+    <div class="footer">
+      Pricing based on AWS on-demand rates · us-west-2 · 40 hr/week EC2 · 1-month EBS (gp2 persistent + gp3 desktop) · 9% tax applied
+    </div>
+
   </div>
 
-  <!-- Copy button -->
-  <div class="copy-row">
-    <button class="btn-copy" id="copy-btn" onclick="copyEstimate()">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H3.5A1.5 1.5 0 0 0 2 3.5V9.5A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      Copy Summary
-    </button>
-  </div>
+  <!-- ═══════════ Skald Estimator ═══════════ -->
+  <div class="card">
 
-  <div class="footer">
-    Pricing based on AWS on-demand rates · us-west-2 · 40 hr/week EC2 · 1-month EBS (gp2 persistent + gp3 desktop) · 9% tax applied
+    <div class="header">
+      <div class="subtitle">AWS</div>
+      <h1>Skald Estimator</h1>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="form-grid">
+
+      <div class="section-label">Systems</div>
+
+      <div class="check-grid">
+        <label class="check-item">
+          <input type="checkbox" class="skald-check" data-system="ChirpyHub" />
+          <span class="check-label">ChirpyHub (r8i.xlarge)</span>
+          <span class="check-price">$271.00/wk</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="skald-check" data-system="SocialPark" />
+          <span class="check-label">SocialPark (r7a.large)</span>
+          <span class="check-price">$128.00/wk</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="skald-check" data-system="CareerHub" />
+          <span class="check-label">CareerHub (t3a.xlarge)</span>
+          <span class="check-price">$151.00/wk</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="skald-check" data-system="JobSite" />
+          <span class="check-label">JobSite (t3a.medium)</span>
+          <span class="check-price">$132.00/wk</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="skald-check" data-system="InfoLink" />
+          <span class="check-label">InfoLink (t3a.medium)</span>
+          <span class="check-price">$52.00/wk</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="skald-check" data-system="CAPost" />
+          <span class="check-label">CAPost (t3a.large)</span>
+          <span class="check-price">$43.00/wk</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" class="skald-check" data-system="VideoHub" />
+          <span class="check-label">VideoHub (t3a.medium)</span>
+          <span class="check-price">$57.00/wk</span>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="skald-results">
+      <div class="results-title">Estimate</div>
+      <div class="placeholder-msg" id="skald-placeholder">Select systems to see your estimate.</div>
+
+      <div id="skald-result-rows" style="display:none"></div>
+    </div>
+
+    <!-- Copy button -->
+    <div class="copy-row">
+      <button class="btn-copy" id="skald-copy-btn" onclick="copySkaldEstimate()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H3.5A1.5 1.5 0 0 0 2 3.5V9.5A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Copy Summary
+      </button>
+    </div>
+
+    <div class="footer">
+      Pricing based on AWS on-demand rates · us-west-2 · 168 hr/week EC2 · 9% tax applied
+    </div>
+
   </div>
 
 </div>
 
 <script>
+  /* ═══════════ Desktop ROM Estimator ═══════════ */
   const RATES = {
     't3a.large':  { windows: 0.1028,   linux: 0.0752  },
     't3a.xlarge': { windows: 0.224,    linux: 0.1504  },
     'm5.xlarge':  { windows: 0.376,    linux: 0.192   },
     'g4ad.xlarge':{ windows: 0.56253,  linux: 0.37853 },
-    'g4dn.xlarge':{ windows: 0.71,  linux: 0.526 },
+    'g4dn.xlarge':{ windows: 0.71,     linux: 0.526   },
   };
 
-  const EBS_GP2_RATE = 0.10; // $/GB/month — persistent drive only
-  const EBS_GP3_RATE = 0.08; // $/GB/month — desktop volume only
-  const MARKETPLACE_UBUNTU_RATE = 0.05; // $/hr addon (Linux only)
+  const EBS_GP2_RATE = 0.10;
+  const EBS_GP3_RATE = 0.08;
+  const MARKETPLACE_UBUNTU_RATE = 0.05;
   const TAX = 0.09;
   const EC2_HOURS = 40;
 
@@ -424,15 +557,12 @@
     const marketplaceChecked = os === 'linux' && document.getElementById('marketplace-ubuntu').checked;
     const effectiveRate      = baseRate + (marketplaceChecked ? MARKETPLACE_UBUNTU_RATE : 0);
 
-    // EC2: 40 hrs × effective rate × (1 + tax)
     const ec2Total = effectiveRate * EC2_HOURS * (1 + TAX);
 
-    // EBS: persistent drive on gp2, desktop volume on gp3 — priced independently
     const ebsGp2Total = gbPersist * EBS_GP2_RATE * (1 + TAX);
     const ebsGp3Total = gbDesktop * EBS_GP3_RATE * (1 + TAX);
     const ebsTotal    = ebsGp2Total + ebsGp3Total;
 
-    // Monthly total: 4 weeks of EC2 + one month of EBS
     const monthlyTotal = (ec2Total * 4) + ebsTotal;
 
     const osLabel = os === 'windows' ? 'Windows' : 'Linux';
@@ -515,7 +645,6 @@
     });
   }
 
-  // Show/hide Marketplace Ubuntu checkbox; clear it when switching away from Linux
   function updateMarketplaceVisibility() {
     const os = document.getElementById('os').value;
     document.getElementById('marketplace-field').style.display = os === 'linux' ? '' : 'none';
@@ -523,7 +652,6 @@
     calc();
   }
 
-  // Wire up inputs
   document.getElementById('os').addEventListener('change', updateMarketplaceVisibility);
   document.getElementById('marketplace-ubuntu').addEventListener('change', calc);
   ['instance', 'desktop'].forEach(id => {
@@ -531,8 +659,110 @@
     document.getElementById(id).addEventListener('input', calc);
   });
 
-  // Initial state (Windows selected by default — marketplace hidden)
   updateMarketplaceVisibility();
+
+  /* ═══════════ Skald Estimator ═══════════ */
+  const SKALD_RATES = {
+    ChirpyHub:  271.00,
+    SocialPark: 128.00,
+    CareerHub:  151.00,
+    JobSite:    132.00,
+    InfoLink:    52.00,
+    CAPost:      43.00,
+    VideoHub:    57.00,
+  };
+
+  function calcSkald() {
+    const checks    = document.querySelectorAll('.skald-check:checked');
+    const placeholder = document.getElementById('skald-placeholder');
+    const resultRows  = document.getElementById('skald-result-rows');
+
+    if (checks.length === 0) {
+      placeholder.style.display = '';
+      resultRows.style.display  = 'none';
+      return;
+    }
+
+    placeholder.style.display = 'none';
+    resultRows.style.display  = '';
+
+    let total = 0;
+    let html = '';
+
+    checks.forEach(cb => {
+      const name = cb.dataset.system;
+      const cost = SKALD_RATES[name];
+      total += cost;
+      html += `
+        <div class="result-row">
+          <div class="label">${name}</div>
+          <div class="value">${fmt(cost)}/wk</div>
+        </div>`;
+    });
+
+    const monthlyTotal = total * 4;
+
+    html += `
+      <div class="result-row total">
+        <div>
+          <div class="label">Weekly Total</div>
+          <div class="sub" style="font-size:0.7rem;color:var(--text-dim)">incl. 9% tax · × 4 wks = ${fmt(monthlyTotal)}/mo</div>
+        </div>
+        <div class="value">${fmt(total)}/wk</div>
+      </div>`;
+
+    resultRows.innerHTML = html;
+  }
+
+  function copySkaldEstimate() {
+    const checks = document.querySelectorAll('.skald-check:checked');
+    if (checks.length === 0) {
+      alert('Please select at least one system before copying.');
+      return;
+    }
+
+    const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    let total = 0;
+
+    const systemLines = [];
+    checks.forEach(cb => {
+      const name = cb.dataset.system;
+      const cost = SKALD_RATES[name];
+      total += cost;
+      systemLines.push(`  ${name.padEnd(14)} ${fmt(cost)}/wk`);
+    });
+
+    const weeklyTotal = total;
+    const monthlyTotal = weeklyTotal * 4;
+
+    const lines = [
+      '── AWS Skald Estimate ──',
+      `Generated: ${now}`,
+      '',
+      'Selected Systems',
+      ...systemLines,
+      '',
+      'Estimate (incl. 9% tax)',
+      `  Weekly Total:        ${fmt(weeklyTotal)}`,
+      `  Monthly Total:       ${fmt(monthlyTotal)}  (weekly × 4)`,
+      '',
+      'Note: ROM-level estimate only. Not a final quote.',
+    ].join('\n');
+
+    navigator.clipboard.writeText(lines).then(() => {
+      const btn = document.getElementById('skald-copy-btn');
+      btn.classList.add('copied');
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H3.5A1.5 1.5 0 0 0 2 3.5V9.5A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Copy Summary`;
+      }, 2500);
+    });
+  }
+
+  document.querySelectorAll('.skald-check').forEach(cb => {
+    cb.addEventListener('change', calcSkald);
+  });
 </script>
 </body>
 </html>
