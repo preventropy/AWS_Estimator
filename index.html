@@ -218,6 +218,9 @@
       color: var(--text-muted);
       font-variant-numeric: tabular-nums;
     }
+    .check-item .check-instance {
+      color: var(--text-dim);
+    }
 
     /* ── Results ── */
     .results {
@@ -317,9 +320,9 @@
 <body>
 
 <div class="disclaimer">
-  These calculators provide ROM-level estimates only for a specific AWS environment.
+  These calculators provide ROM-level estimates only for a specific environment.
   All figures are planning values and should not be treated as
-  final quotes or contractual commitments.
+  final or contractual commitments.
 </div>
 
 <div class="page">
@@ -733,10 +736,11 @@
   // Generate Skald checkboxes from SKALD_RATES
   const skaldGrid = document.getElementById('skald-checks');
   Object.entries(SKALD_RATES).forEach(([key, { label, price }]) => {
+    const labelHtml = label.replace(/ \(([^)]+)\)/, ' <span class="check-instance">($1)</span>');
     skaldGrid.insertAdjacentHTML('beforeend', `
       <label class="check-item">
         <input type="checkbox" class="skald-check" data-system="${key}" />
-        <span class="check-label">${label}</span>
+        <span class="check-label">${labelHtml}</span>
         <span class="check-price">${fmt(price)}/wk</span>
       </label>`);
   });
