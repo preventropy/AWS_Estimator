@@ -328,7 +328,6 @@
   <div class="card">
 
     <div class="header">
-      <div class="subtitle">AWS</div>
       <h1>Desktop ROM Estimator</h1>
     </div>
 
@@ -438,7 +437,6 @@
   <div class="card">
 
     <div class="header">
-      <div class="subtitle">AWS</div>
       <h1>Skald Estimator</h1>
     </div>
 
@@ -453,43 +451,7 @@
         <span class="check-label" style="font-weight:600">Select All</span>
       </label>
 
-      <div class="check-grid">
-        <label class="check-item">
-          <input type="checkbox" class="skald-check" data-system="ChirpyHub" />
-          <span class="check-label">ChirpyHub (r8i.xlarge)</span>
-          <span class="check-price">$271.00/wk</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" class="skald-check" data-system="SocialPark" />
-          <span class="check-label">SocialPark (r7a.large)</span>
-          <span class="check-price">$128.00/wk</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" class="skald-check" data-system="CareerHub" />
-          <span class="check-label">CareerHub (t3a.xlarge)</span>
-          <span class="check-price">$151.00/wk</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" class="skald-check" data-system="JobSite" />
-          <span class="check-label">JobSite (t3a.medium)</span>
-          <span class="check-price">$132.00/wk</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" class="skald-check" data-system="InfoLink" />
-          <span class="check-label">InfoLink (t3a.medium)</span>
-          <span class="check-price">$52.00/wk</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" class="skald-check" data-system="CAPost" />
-          <span class="check-label">CAPost (t3a.large)</span>
-          <span class="check-price">$43.00/wk</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" class="skald-check" data-system="VideoHub" />
-          <span class="check-label">VideoHub (t3a.medium)</span>
-          <span class="check-price">$57.00/wk</span>
-        </label>
-      </div>
+      <div class="check-grid" id="skald-checks"></div>
 
     </div>
 
@@ -668,13 +630,13 @@
 
   /* ═══════════ Skald Estimator ═══════════ */
   const SKALD_RATES = {
-    ChirpyHub:  271.00,
-    SocialPark: 128.00,
-    CareerHub:  151.00,
-    JobSite:    132.00,
-    InfoLink:    52.00,
-    CAPost:      43.00,
-    VideoHub:    57.00,
+    ChirpyHub:  { label: 'ChirpyHub (r8i.xlarge)',   price: 271.00 },
+    SocialPark: { label: 'SocialPark (r7a.large)',    price: 128.00 },
+    CareerHub:  { label: 'CareerHub (t3a.xlarge)',    price: 151.00 },
+    JobSite:    { label: 'JobSite (t3a.medium)',      price: 132.00 },
+    InfoLink:   { label: 'InfoLink (t3a.medium)',     price:  52.00 },
+    CAPost:     { label: 'CAPost (t3a.large)',        price:  43.00 },
+    VideoHub:   { label: 'VideoHub (t3a.medium)',     price:  57.00 },
   };
 
   function calcSkald() {
@@ -699,11 +661,11 @@
 
     checks.forEach(cb => {
       const name = cb.dataset.system;
-      const cost = SKALD_RATES[name];
+      const cost = SKALD_RATES[name].price;
       total += cost;
       html += `
         <div class="result-row">
-          <div class="label">${name}</div>
+          <div class="label">${SKALD_RATES[name].label}</div>
           <div class="value">${fmt(cost)}/wk</div>
         </div>`;
     });
@@ -735,9 +697,9 @@
     const systemLines = [];
     checks.forEach(cb => {
       const name = cb.dataset.system;
-      const cost = SKALD_RATES[name];
+      const cost = SKALD_RATES[name].price;
       total += cost;
-      systemLines.push(`  ${name.padEnd(14)} ${fmt(cost)}/wk`);
+      systemLines.push(`  ${SKALD_RATES[name].label.padEnd(28)} ${fmt(cost)}/wk`);
     });
 
     const weeklyTotal = total;
@@ -767,6 +729,17 @@
       }, 2500);
     });
   }
+
+  // Generate Skald checkboxes from SKALD_RATES
+  const skaldGrid = document.getElementById('skald-checks');
+  Object.entries(SKALD_RATES).forEach(([key, { label, price }]) => {
+    skaldGrid.insertAdjacentHTML('beforeend', `
+      <label class="check-item">
+        <input type="checkbox" class="skald-check" data-system="${key}" />
+        <span class="check-label">${label}</span>
+        <span class="check-price">${fmt(price)}/wk</span>
+      </label>`);
+  });
 
   document.querySelectorAll('.skald-check').forEach(cb => {
     cb.addEventListener('change', calcSkald);
