@@ -448,6 +448,11 @@
 
       <div class="section-label">Systems</div>
 
+      <label class="check-item" style="border-color:var(--accent);background:rgba(79,110,247,0.06)">
+        <input type="checkbox" id="skald-all" />
+        <span class="check-label" style="font-weight:600">Select All</span>
+      </label>
+
       <div class="check-grid">
         <label class="check-item">
           <input type="checkbox" class="skald-check" data-system="ChirpyHub" />
@@ -674,8 +679,11 @@
 
   function calcSkald() {
     const checks    = document.querySelectorAll('.skald-check:checked');
+    const all       = document.querySelectorAll('.skald-check').length;
     const placeholder = document.getElementById('skald-placeholder');
     const resultRows  = document.getElementById('skald-result-rows');
+
+    document.getElementById('skald-all').checked = checks.length === all;
 
     if (checks.length === 0) {
       placeholder.style.display = '';
@@ -762,6 +770,12 @@
 
   document.querySelectorAll('.skald-check').forEach(cb => {
     cb.addEventListener('change', calcSkald);
+  });
+
+  document.getElementById('skald-all').addEventListener('change', function () {
+    const checked = this.checked;
+    document.querySelectorAll('.skald-check').forEach(cb => cb.checked = checked);
+    calcSkald();
   });
 </script>
 </body>
