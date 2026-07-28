@@ -338,7 +338,7 @@
 
     <div class="form-grid">
 
-      <div class="section-label">Environment</div>
+      <div class="section-label">Compute</div>
 
       <div class="field">
         <label for="region">Region</label>
@@ -387,6 +387,19 @@
         <span class="hint">1 – 10,000 GB · $0.08/GB/mo</span>
       </div>
 
+      <hr class="divider" style="margin:4px 0" />
+      <div class="section-label">Load-Balancing & Bandwidth</div>
+
+      <div class="field">
+        <label for="lb">Load-Balancing</label>
+        <input id="lb" type="text" value="$0.35/user/week" readonly />
+      </div>
+
+      <div class="field">
+        <label for="bw">Bandwidth</label>
+        <input id="bw" type="text" value="$0.40/user/week" readonly />
+      </div>
+
     </div>
 
     <!-- Results -->
@@ -409,10 +422,22 @@
           </div>
           <div class="value" id="ebs-val"></div>
         </div>
+        <div class="result-row">
+          <div>
+            <div class="label">Load-Balancing — 1 week</div>
+          </div>
+          <div class="value" id="lb-val"></div>
+        </div>
+        <div class="result-row">
+          <div>
+            <div class="label">Bandwidth — 1 week</div>
+          </div>
+          <div class="value" id="bw-val"></div>
+        </div>
         <div class="result-row total">
           <div>
             <div class="label">Monthly Total</div>
-            <div class="sub" style="font-size:0.7rem;color:var(--text-dim)">EC2 × 4 wks + EBS · incl. 9% tax</div>
+            <div class="sub" style="font-size:0.7rem;color:var(--text-dim)">EC2 × 4 wks + EBS + LB &amp; BW × 4 wks · incl. 9% tax</div>
           </div>
           <div class="value" id="total-val"></div>
         </div>
@@ -431,7 +456,7 @@
     </div>
 
     <div class="footer">
-      Pricing based on AWS on-demand rates · us-west-2 · 40 hr/week EC2 · 1-month EBS (gp2 persistent + gp3 desktop) · 9% tax applied
+      Pricing based on AWS on-demand rates · us-west-2 · 40 hr/week EC2 · 1-month EBS (gp2 persistent + gp3 desktop) · LB $0.35/wk · BW $0.40/wk · 9% tax applied
     </div>
 
   </div>
@@ -500,6 +525,8 @@
   const MARKETPLACE_UBUNTU_RATE = 0.05;
   const TAX = 0.09;
   const EC2_HOURS = 40;
+  const LB_WEEKLY = 0.35;
+  const BW_WEEKLY = 0.40;
 
   function fmt(n) {
     return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -533,7 +560,7 @@
     const ebsGp3Total = gbDesktop * EBS_GP3_RATE * (1 + TAX);
     const ebsTotal    = ebsGp2Total + ebsGp3Total;
 
-    const monthlyTotal = (ec2Total * 4) + ebsTotal;
+    const monthlyTotal = (ec2Total * 4) + ebsTotal + ((LB_WEEKLY + BW_WEEKLY) * 4);
 
     const osLabel = os === 'windows' ? 'Windows' : 'Linux';
     const rateLabel = marketplaceChecked
@@ -547,6 +574,9 @@
     document.getElementById('ebs-sub').textContent =
       `gp2: ${gbPersist} GB × $0.10  +  gp3: ${gbDesktop} GB × $0.08  +  9% tax`;
     document.getElementById('ebs-val').textContent = fmt(ebsTotal);
+
+    document.getElementById('lb-val').textContent = fmt(LB_WEEKLY);
+    document.getElementById('bw-val').textContent = fmt(BW_WEEKLY);
 
     document.getElementById('total-val').textContent = fmt(monthlyTotal);
   }
@@ -571,7 +601,7 @@
     const ebsGp2Total = gbPersist * EBS_GP2_RATE * (1 + TAX);
     const ebsGp3Total = gbDesktop * EBS_GP3_RATE * (1 + TAX);
     const ebsTotal    = ebsGp2Total + ebsGp3Total;
-    const monthlyTotal = (ec2Total * 4) + ebsTotal;
+    const monthlyTotal = (ec2Total * 4) + ebsTotal + ((LB_WEEKLY + BW_WEEKLY) * 4);
 
     const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const marketplaceLine = marketplaceChecked ? `  Marketplace Ubuntu:  Yes (+$0.05/hr)` : null;
@@ -598,8 +628,11 @@
       `  EBS Storage (1 mo):  ${fmt(ebsTotal)}`,
       `    gp2: ${gbPersist} GB × $0.10  +  gp3: ${gbDesktop} GB × $0.08`,
       '',
+      `  Load-Balancing (1 wk):  ${fmt(LB_WEEKLY)}`,
+      `  Bandwidth (1 wk):       ${fmt(BW_WEEKLY)}`,
+      '',
       `  MONTHLY TOTAL:       ${fmt(monthlyTotal)}`,
-      `    (EC2 × 4 wks + EBS)`,
+      `    (EC2 × 4 wks + EBS + LB & BW × 4 wks)`,
       '',
       'Note: ROM-level estimate only. Not a final quote.',
     ].filter(l => l !== null).join('\n');
