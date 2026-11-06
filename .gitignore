@@ -1,2 +1,4 @@
 /AWS_pricing_GET_request/*
 index.json
+.claude/
+__pycache__/

@@ -4,6 +4,13 @@ setlocal
 REM Run from the folder this .bat file lives in
 cd /d "%~dp0"
 
+REM Only update prices on main, so they go live and don't get stuck on a feature branch
+for /f %%b in ('git rev-parse --abbrev-ref HEAD') do set BRANCH=%%b
+if not "%BRANCH%"=="main" (
+    echo You are on branch "%BRANCH%". Switch to main first:  git switch main
+    goto :end
+)
+
 echo === Running pricing update ===
 python update_pricing.py
 set PY_EXIT=%ERRORLEVEL%

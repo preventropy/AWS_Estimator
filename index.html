@@ -503,30 +503,17 @@
     </div>
 
     <div class="footer">
-      Pricing based on AWS on-demand rates · us-west-2 · 168 hr/week EC2 · 9% tax applied
+      Pricing based on AWS on-demand rates · us-west-2 · 168 hr/week EC2 · $10/wk bandwidth · EBS (monthly ÷ 4) · 9% tax · rounded up to the whole dollar
     </div>
 
   </div>
 
 </div>
 
+<script src="rates.js"></script>
 <script>
   /* ═══════════ Desktop ROM Estimator ═══════════ */
-  const RATES = {
-    't3a.large':  { windows: 0.1028,   linux: 0.0752  },
-    't3a.xlarge': { windows: 0.224,    linux: 0.1504  },
-    'm5.xlarge':  { windows: 0.376,    linux: 0.192   },
-    'g4ad.xlarge':{ windows: 0.56253,  linux: 0.37853 },
-    'g4dn.xlarge':{ windows: 0.71,     linux: 0.526   },
-  };
-
-  const EBS_GP2_RATE = 0.10;
-  const EBS_GP3_RATE = 0.08;
-  const MARKETPLACE_UBUNTU_RATE = 0.05;
-  const TAX = 0.09;
-  const EC2_HOURS = 40;
-  const LB_WEEKLY = 0.35;
-  const BW_WEEKLY = 0.40;
+  /* All prices and constants live in rates.js */
 
   function fmt(n) {
     return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -665,15 +652,7 @@
   updateMarketplaceVisibility();
 
   /* ═══════════ Skald Estimator ═══════════ */
-  const SKALD_RATES = {
-    ChirpyHub:  { label: 'ChirpyHub (r8i.xlarge)',   price: 271.00 },
-    SocialPark: { label: 'SocialPark (r7a.large)',    price: 128.00 },
-    CareerHub:  { label: 'CareerHub (t3a.xlarge)',    price: 151.00 },
-    JobSite:    { label: 'JobSite (t3a.medium)',      price: 132.00 },
-    InfoLink:   { label: 'InfoLink (t3a.medium)',     price:  52.00 },
-    CAPost:     { label: 'CAPost (t3a.large)',        price:  43.00 },
-    VideoHub:   { label: 'VideoHub (t3a.medium)',     price:  57.00 },
-  };
+  /* SKALD_RATES is built in rates.js from SKALD_SYSTEMS */
 
   function calcSkald() {
     const checks    = document.querySelectorAll('.skald-check:checked');

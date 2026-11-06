@@ -6,10 +6,10 @@ Looks in the AWS_pricing_GET_request folder (next to this script) for new
 .json files (AWS Price List API "GetProducts" responses, or any file that
 contains the pricing "$X.XXXX per On Demand <OS> <instance> Instance Hour"
 text somewhere in it). Extracts the six rates this project cares about and
-writes them into index.html's RATES table.
+writes them into the RATES table in rates.js.
 
 Exit codes (used by run_pricing_update.bat to decide whether to run git):
-    0 -> index.html was updated, go ahead and commit/push
+    0 -> rates.js was updated, go ahead and commit/push
     2 -> nothing new to process, skip commit/push
     1 -> something went wrong
 """
@@ -21,10 +21,10 @@ import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PRICING_DIR = os.path.join(SCRIPT_DIR, "AWS_pricing_GET_request")
-INDEX_HTML = os.path.join(SCRIPT_DIR, "index.html")
+RATES_JS = os.path.join(SCRIPT_DIR, "rates.js")
 STATE_FILE = os.path.join(SCRIPT_DIR, ".pricing_state.json")
 
-# Instance types this project tracks (must match the keys in index.html's RATES table)
+# Instance types this project tracks (must match the keys in rates.js's RATES table)
 INSTANCES = ["t3a.large", "t3a.xlarge", "m5.xlarge", "g4ad.xlarge", "g4dn.xlarge"]
 OSES = ["Windows", "Linux"]
 
@@ -78,9 +78,9 @@ def extract_rates(filepath):
     return found
 
 
-def update_index_html(rates):
+def update_rates_js(rates):
     """rates: dict of (instance, 'windows'/'linux') -> float"""
-    with open(INDEX_HTML, "r", encoding="utf-8") as f:
+    with open(RATES_JS, "r", encoding="utf-8") as f:
         html = f.read()
 
     updated_pairs = []
@@ -93,7 +93,7 @@ def update_index_html(rates):
 
         m = line_re.search(html)
         if not m:
-            print(f"WARNING: could not find RATES entry for '{instance}' in index.html")
+            print(f"WARNING: could not find RATES entry for '{instance}' in rates.js")
             continue
 
         new_windows = rates.get((instance, "windows"))
@@ -113,7 +113,7 @@ def update_index_html(rates):
         replacement = m.group(1) + windows_str + m.group(3) + linux_str + m.group(5)
         html = html[: m.start()] + replacement + html[m.end():]
 
-    with open(INDEX_HTML, "w", encoding="utf-8") as f:
+    with open(RATES_JS, "w", encoding="utf-8") as f:
         f.write(html)
 
     return updated_pairs
@@ -150,24 +150,24 @@ def main():
             combined_rates.update(rates)
 
     if not combined_rates:
-        print("No matching pricing strings found in any new file. index.html not changed.")
+        print("No matching pricing strings found in any new file. rates.js not changed.")
         # Still mark these as processed so we don't keep re-scanning junk files.
         state["processed"] = sorted(processed | set(new_files))
         save_state(state)
         sys.exit(2)
 
-    updated_pairs = update_index_html(combined_rates)
+    updated_pairs = update_rates_js(combined_rates)
 
     state["processed"] = sorted(processed | set(new_files))
     save_state(state)
 
     if updated_pairs:
-        print("Updated index.html rates:")
+        print("Updated rates.js rates:")
         for pair in updated_pairs:
             print(f"  {pair}")
         sys.exit(0)
     else:
-        print("Rates found matched existing values in index.html. No changes made.")
+        print("Rates found matched existing values in rates.js. No changes made.")
         sys.exit(2)
 
 
