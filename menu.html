@@ -21,48 +21,25 @@
 
 <div class="page">
 
-  <!-- ═══════════ Desktop ROM Estimator ═══════════ -->
   <div class="card">
 
     <div class="header">
-      <h1>Desktop ROM Estimator</h1>
+      <h1>ROM Estimator</h1>
     </div>
 
     <hr class="divider" />
 
+    <!-- ═══════════ Desktops ═══════════ -->
     <div class="form-grid">
       <div class="section-label">Desktops · enter how many of each</div>
       <div class="menu-list" id="desktop-items"></div>
     </div>
 
-    <!-- Results -->
-    <div class="results">
-      <div class="results-title">Estimate</div>
-      <div class="placeholder-msg" id="desktop-placeholder">Enter a quantity to see your estimate.</div>
-      <div id="desktop-result-rows" style="display:none"></div>
-    </div>
-
-    <!-- Copy button -->
-    <div class="copy-row">
-      <button class="btn-copy" id="desktop-copy-btn" onclick="copyDesktopEstimate()"></button>
-    </div>
-
-    <div class="footer" id="desktop-footer"></div>
-
-  </div>
-
-  <!-- ═══════════ Skald Estimator ═══════════ -->
-  <div class="card">
-
-    <div class="header">
-      <h1>Skald Estimator</h1>
-    </div>
-
     <hr class="divider" />
 
+    <!-- ═══════════ Skald ═══════════ -->
     <div class="form-grid">
-
-      <div class="section-label">Systems</div>
+      <div class="section-label">Skald Systems</div>
 
       <label class="check-item" style="border-color:var(--accent);background:rgba(79,110,247,0.06)">
         <input type="checkbox" id="skald-all" />
@@ -70,24 +47,20 @@
       </label>
 
       <div class="check-grid" id="skald-checks"></div>
-
     </div>
 
-    <!-- Results -->
+    <!-- ═══════════ Combined estimate ═══════════ -->
     <div class="results">
       <div class="results-title">Estimate</div>
-      <div class="placeholder-msg" id="skald-placeholder">Select systems to see your estimate.</div>
-      <div id="skald-result-rows" style="display:none"></div>
+      <div class="placeholder-msg" id="placeholder">Enter desktop quantities or select Skald systems to see your estimate.</div>
+      <div id="result-rows" style="display:none"></div>
     </div>
 
-    <!-- Copy button -->
     <div class="copy-row">
-      <button class="btn-copy" id="skald-copy-btn" onclick="copySkaldEstimate()"></button>
+      <button class="btn-copy" id="copy-btn" onclick="copyEstimate()"></button>
     </div>
 
-    <div class="footer">
-      Pricing based on AWS on-demand rates · us-west-2 · 168 hr/week EC2 · $10/wk bandwidth · EBS (monthly ÷ 4) · 9% tax · rounded up to the whole dollar
-    </div>
+    <div class="footer" id="footer"></div>
 
   </div>
 
@@ -95,7 +68,7 @@
 
 <script src="rates.js"></script>
 <script>
-  /* ═══════════ Shared helpers ═══════════ */
+  /* ═══════════ Helpers ═══════════ */
   function fmt(n) {
     return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
@@ -109,40 +82,6 @@
     return parts.join(' + ');
   }
 
-  function today() {
-    return new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  }
-
-  const COPY_ICON = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H3.5A1.5 1.5 0 0 0 2 3.5V9.5A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Copy Summary`;
-  const COPIED_ICON = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
-
-  function copyText(text, btnId) {
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById(btnId);
-      btn.classList.add('copied');
-      btn.innerHTML = COPIED_ICON;
-      setTimeout(() => {
-        btn.classList.remove('copied');
-        btn.innerHTML = COPY_ICON;
-      }, 2500);
-    });
-  }
-
-  document.querySelectorAll('.btn-copy').forEach(btn => btn.innerHTML = COPY_ICON);
-
-  function totalRow(weekly) {
-    return `
-      <div class="result-row total">
-        <div>
-          <div class="label">Weekly Total</div>
-          <div class="sub">× ${WEEKS_PER_MONTH} wks = ${fmt(weekly * WEEKS_PER_MONTH)}/mo</div>
-        </div>
-        <div class="value">${fmt(weekly)}/wk</div>
-      </div>`;
-  }
-
-  /* ═══════════ Desktop ROM Estimator ═══════════ */
-
   // e.g. "m5.xlarge · Linux · 100 GB gp3 · + Marketplace $0.05/hr"
   function presetDetail(p) {
     const parts = [p.instance, PLATFORM_LABELS[p.platform], storageText(p.gp2, p.gp3)];
@@ -150,7 +89,15 @@
     return parts.join(' · ');
   }
 
-  // Build one row per preset in DESKTOP_PRESETS (rates.js)
+  function plural(n, word) {
+    return `${n} ${word}${n === 1 ? '' : 's'}`;
+  }
+
+  const COPY_ICON = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2H3.5A1.5 1.5 0 0 0 2 3.5V9.5A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Copy Summary`;
+  const COPIED_ICON = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
+  document.getElementById('copy-btn').innerHTML = COPY_ICON;
+
+  /* ═══════════ Build the Desktop list (DESKTOP_PRESETS in rates.js) ═══════════ */
   const desktopList = document.getElementById('desktop-items');
   Object.entries(DESKTOP_PRESETS).forEach(([key, p]) => {
     desktopList.insertAdjacentHTML('beforeend', `
@@ -160,114 +107,11 @@
           <span class="menu-detail">${presetDetail(p)}</span>
         </div>
         <span class="menu-price">${fmt(desktopWeeklyPrice(p))}/wk</span>
-        <input class="qty" type="number" min="0" step="1" value="0" inputmode="numeric" aria-label="How many ${p.name}s" />
+        <input class="qty" type="number" min="0" step="1" value="0" inputmode="numeric" aria-label="How many ${p.name}" />
       </div>`);
   });
 
-  document.getElementById('desktop-footer').textContent =
-    `Pricing based on AWS on-demand rates · us-west-2 · ${EC2_HOURS} hr/week EC2 · EBS (monthly ÷ ${WEEKS_PER_MONTH}) · ` +
-    `${Math.round(TAX * 100)}% tax on EC2 & EBS · LB ${fmt(LB_WEEKLY)}/wk & BW ${fmt(BW_WEEKLY)}/wk per desktop`;
-
-  // Read quantities → [{ key, preset, qty, each, cost }] for every preset with qty > 0
-  function desktopSelections() {
-    const out = [];
-    document.querySelectorAll('#desktop-items .menu-item').forEach(row => {
-      const qty = Math.max(0, Math.floor(Number(row.querySelector('.qty').value) || 0));
-      row.classList.toggle('active', qty > 0);
-      if (qty === 0) return;
-      const preset = DESKTOP_PRESETS[row.dataset.key];
-      const each = desktopWeeklyPrice(preset);
-      out.push({ preset, qty, each, cost: each * qty });
-    });
-    return out;
-  }
-
-  function desktopTotals(items) {
-    const count = items.reduce((n, i) => n + i.qty, 0);
-    const lb = count * LB_WEEKLY;
-    const bw = count * BW_WEEKLY;
-    const weekly = items.reduce((t, i) => t + i.cost, 0) + lb + bw;
-    return { count, lb, bw, weekly };
-  }
-
-  function calcDesktops() {
-    const items = desktopSelections();
-    const placeholder = document.getElementById('desktop-placeholder');
-    const rows = document.getElementById('desktop-result-rows');
-
-    if (items.length === 0) {
-      placeholder.style.display = '';
-      rows.style.display = 'none';
-      return;
-    }
-    placeholder.style.display = 'none';
-    rows.style.display = '';
-
-    const { count, lb, bw, weekly } = desktopTotals(items);
-    let html = '';
-    items.forEach(i => {
-      html += `
-        <div class="result-row">
-          <div>
-            <div class="label">${i.preset.name} × ${i.qty}</div>
-            <div class="sub">${fmt(i.each)}/wk each${i.preset.marketplace ? ` · incl. Marketplace ${fmt(MARKETPLACE_RATE)}/hr` : ''} · incl. tax</div>
-          </div>
-          <div class="value">${fmt(i.cost)}/wk</div>
-        </div>`;
-    });
-    html += `
-      <div class="result-row">
-        <div>
-          <div class="label">Load-Balancing</div>
-          <div class="sub">${count} desktop${count === 1 ? '' : 's'} × ${fmt(LB_WEEKLY)}/wk</div>
-        </div>
-        <div class="value">${fmt(lb)}/wk</div>
-      </div>
-      <div class="result-row">
-        <div>
-          <div class="label">Bandwidth</div>
-          <div class="sub">${count} desktop${count === 1 ? '' : 's'} × ${fmt(BW_WEEKLY)}/wk</div>
-        </div>
-        <div class="value">${fmt(bw)}/wk</div>
-      </div>`;
-    html += totalRow(weekly);
-    rows.innerHTML = html;
-  }
-
-  function copyDesktopEstimate() {
-    const items = desktopSelections();
-    if (items.length === 0) {
-      alert('Enter a quantity for at least one desktop before copying.');
-      return;
-    }
-    const { count, lb, bw, weekly } = desktopTotals(items);
-    const lines = [
-      '── AWS Desktop ROM Estimate ──',
-      `Generated: ${today()}`,
-      '',
-      'Desktops (incl. tax)',
-      ...items.map(i =>
-        `  ${(i.preset.name + ' × ' + i.qty).padEnd(24)} ${fmt(i.cost)}/wk` +
-        `   (${presetDetail(i.preset)} · ${fmt(i.each)}/wk each)`),
-      `  ${'Load-Balancing'.padEnd(24)} ${fmt(lb)}/wk   (${count} × ${fmt(LB_WEEKLY)})`,
-      `  ${'Bandwidth'.padEnd(24)} ${fmt(bw)}/wk   (${count} × ${fmt(BW_WEEKLY)})`,
-      '',
-      `  Weekly Total:            ${fmt(weekly)}`,
-      `  Monthly Total:           ${fmt(weekly * WEEKS_PER_MONTH)}  (weekly × ${WEEKS_PER_MONTH})`,
-      '',
-      'Note: ROM-level estimate only. Not a final quote.',
-    ];
-    copyText(lines.join('\n'), 'desktop-copy-btn');
-  }
-
-  document.querySelectorAll('#desktop-items .qty').forEach(input => {
-    input.addEventListener('input', calcDesktops);
-    input.addEventListener('focus', () => input.select());
-  });
-
-  /* ═══════════ Skald Estimator ═══════════ */
-
-  // Build one checkbox per system in SKALD_RATES (rates.js)
+  /* ═══════════ Build the Skald list (SKALD_RATES in rates.js) ═══════════ */
   const skaldGrid = document.getElementById('skald-checks');
   Object.entries(SKALD_RATES).forEach(([key, { label, price }]) => {
     const labelHtml = label.replace(/ \(([^)]+)\)/, ' <span class="check-instance">($1)</span>');
@@ -279,69 +123,149 @@
       </label>`);
   });
 
-  function calcSkald() {
-    const checks = document.querySelectorAll('.skald-check:checked');
-    const all = document.querySelectorAll('.skald-check').length;
-    const placeholder = document.getElementById('skald-placeholder');
-    const rows = document.getElementById('skald-result-rows');
+  document.getElementById('footer').innerHTML =
+    `Desktops: AWS on-demand rates · us-west-2 · ${EC2_HOURS} hr/week EC2 · EBS (monthly ÷ ${WEEKS_PER_MONTH}) · ` +
+    `${Math.round(TAX * 100)}% tax on EC2, Marketplace &amp; EBS · LB ${fmt(LB_WEEKLY)}/wk &amp; BW ${fmt(BW_WEEKLY)}/wk per desktop<br />` +
+    `Skald: ${SKALD_HOURS} hr/week EC2 · ${fmt(SKALD_BANDWIDTH_WEEKLY)}/wk bandwidth · EBS (monthly ÷ ${WEEKS_PER_MONTH}) · ` +
+    `${Math.round(TAX * 100)}% tax · rounded up to the whole dollar`;
 
-    document.getElementById('skald-all').checked = checks.length === all;
+  /* ═══════════ Read the current selections ═══════════ */
 
-    if (checks.length === 0) {
-      placeholder.style.display = '';
-      rows.style.display = 'none';
-      return;
-    }
-    placeholder.style.display = 'none';
-    rows.style.display = '';
-
-    let total = 0;
-    let html = '';
-    checks.forEach(cb => {
-      const { label, price } = SKALD_RATES[cb.dataset.system];
-      total += price;
-      html += `
-        <div class="result-row">
-          <div class="label">${label}</div>
-          <div class="value">${fmt(price)}/wk</div>
-        </div>`;
+  // Desktops: { items: [{ preset, qty, each, cost }], count, lb, bw, subtotal }
+  function readDesktops() {
+    const items = [];
+    document.querySelectorAll('#desktop-items .menu-item').forEach(row => {
+      const qty = Math.max(0, Math.floor(Number(row.querySelector('.qty').value) || 0));
+      row.classList.toggle('active', qty > 0);
+      if (qty === 0) return;
+      const preset = DESKTOP_PRESETS[row.dataset.key];
+      const each = desktopWeeklyPrice(preset);
+      items.push({ preset, qty, each, cost: each * qty });
     });
-    html += totalRow(total);
+    const count = items.reduce((n, i) => n + i.qty, 0);
+    const lb = count * LB_WEEKLY;
+    const bw = count * BW_WEEKLY;
+    const subtotal = items.reduce((t, i) => t + i.cost, 0) + lb + bw;
+    return { items, count, lb, bw, subtotal };
+  }
+
+  // Skald: { items: [{ label, price }], subtotal }
+  function readSkald() {
+    const boxes = document.querySelectorAll('.skald-check');
+    const checked = [...boxes].filter(cb => cb.checked);
+    document.getElementById('skald-all').checked = checked.length === boxes.length;
+    const items = checked.map(cb => SKALD_RATES[cb.dataset.system]);
+    const subtotal = items.reduce((t, i) => t + i.price, 0);
+    return { items, subtotal };
+  }
+
+  /* ═══════════ Combined estimate ═══════════ */
+
+  function row(label, sub, value, cls = '') {
+    return `
+      <div class="result-row ${cls}">
+        <div>
+          <div class="label">${label}</div>
+          ${sub ? `<div class="sub">${sub}</div>` : ''}
+        </div>
+        <div class="value">${value}</div>
+      </div>`;
+  }
+
+  function calc() {
+    const d = readDesktops();
+    const s = readSkald();
+    const hasD = d.items.length > 0;
+    const hasS = s.items.length > 0;
+    const both = hasD && hasS;
+
+    document.getElementById('placeholder').style.display = (hasD || hasS) ? 'none' : '';
+    const rows = document.getElementById('result-rows');
+    rows.style.display = (hasD || hasS) ? '' : 'none';
+    if (!hasD && !hasS) return;
+
+    let html = '';
+
+    if (hasD) {
+      html += `<div class="result-group">Desktops</div>`;
+      d.items.forEach(i => {
+        const mk = i.preset.marketplace ? ` · incl. Marketplace ${fmt(MARKETPLACE_RATE)}/hr` : '';
+        html += row(`${i.preset.name} × ${i.qty}`, `${fmt(i.each)}/wk each${mk} · incl. tax`, `${fmt(i.cost)}/wk`);
+      });
+      html += row('Load-Balancing', `${plural(d.count, 'desktop')} × ${fmt(LB_WEEKLY)}/wk`, `${fmt(d.lb)}/wk`);
+      html += row('Bandwidth',      `${plural(d.count, 'desktop')} × ${fmt(BW_WEEKLY)}/wk`, `${fmt(d.bw)}/wk`);
+      if (both) html += row('Desktops subtotal', '', `${fmt(d.subtotal)}/wk`, 'subtotal');
+    }
+
+    if (hasS) {
+      html += `<div class="result-group">Skald Systems</div>`;
+      s.items.forEach(i => html += row(i.label, 'incl. tax', `${fmt(i.price)}/wk`));
+      if (both) html += row('Skald subtotal', '', `${fmt(s.subtotal)}/wk`, 'subtotal');
+    }
+
+    const weekly = d.subtotal + s.subtotal;
+    html += row('Weekly Total', `× ${WEEKS_PER_MONTH} wks = ${fmt(weekly * WEEKS_PER_MONTH)}/mo`, `${fmt(weekly)}/wk`, 'total');
     rows.innerHTML = html;
   }
 
-  function copySkaldEstimate() {
-    const checks = document.querySelectorAll('.skald-check:checked');
-    if (checks.length === 0) {
-      alert('Please select at least one system before copying.');
+  function copyEstimate() {
+    const d = readDesktops();
+    const s = readSkald();
+    if (d.items.length === 0 && s.items.length === 0) {
+      alert('Enter a desktop quantity or select a Skald system before copying.');
       return;
     }
-    let total = 0;
-    const systemLines = [];
-    checks.forEach(cb => {
-      const { label, price } = SKALD_RATES[cb.dataset.system];
-      total += price;
-      systemLines.push(`  ${label.padEnd(28)} ${fmt(price)}/wk`);
-    });
+
+    const W = 28;  // label column width
+    const line = (label, value, note = '') => `  ${label.padEnd(W)} ${value}${note ? '   (' + note + ')' : ''}`;
     const lines = [
-      '── AWS Skald Estimate ──',
-      `Generated: ${today()}`,
+      '── AWS ROM Estimate ──',
+      `Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+    ];
+
+    if (d.items.length) {
+      lines.push('', 'Desktops (incl. tax)');
+      d.items.forEach(i => lines.push(line(`${i.preset.name} × ${i.qty}`, `${fmt(i.cost)}/wk`, `${presetDetail(i.preset)} · ${fmt(i.each)}/wk each`)));
+      lines.push(line('Load-Balancing', `${fmt(d.lb)}/wk`, `${d.count} × ${fmt(LB_WEEKLY)}`));
+      lines.push(line('Bandwidth',      `${fmt(d.bw)}/wk`, `${d.count} × ${fmt(BW_WEEKLY)}`));
+      lines.push(line('Desktops subtotal', `${fmt(d.subtotal)}/wk`));
+    }
+
+    if (s.items.length) {
+      lines.push('', 'Skald Systems (incl. tax)');
+      s.items.forEach(i => lines.push(line(i.label, `${fmt(i.price)}/wk`)));
+      lines.push(line('Skald subtotal', `${fmt(s.subtotal)}/wk`));
+    }
+
+    const weekly = d.subtotal + s.subtotal;
+    lines.push(
       '',
-      'Selected Systems (incl. tax)',
-      ...systemLines,
-      '',
-      `  Weekly Total:        ${fmt(total)}`,
-      `  Monthly Total:       ${fmt(total * WEEKS_PER_MONTH)}  (weekly × ${WEEKS_PER_MONTH})`,
+      line('WEEKLY TOTAL',  fmt(weekly)),
+      line('MONTHLY TOTAL', fmt(weekly * WEEKS_PER_MONTH), `weekly × ${WEEKS_PER_MONTH}`),
       '',
       'Note: ROM-level estimate only. Not a final quote.',
-    ];
-    copyText(lines.join('\n'), 'skald-copy-btn');
+    );
+
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.classList.add('copied');
+      btn.innerHTML = COPIED_ICON;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = COPY_ICON;
+      }, 2500);
+    });
   }
 
-  document.querySelectorAll('.skald-check').forEach(cb => cb.addEventListener('change', calcSkald));
+  /* ═══════════ Wire up ═══════════ */
+  document.querySelectorAll('#desktop-items .qty').forEach(input => {
+    input.addEventListener('input', calc);
+    input.addEventListener('focus', () => input.select());
+  });
+  document.querySelectorAll('.skald-check').forEach(cb => cb.addEventListener('change', calc));
   document.getElementById('skald-all').addEventListener('change', function () {
     document.querySelectorAll('.skald-check').forEach(cb => cb.checked = this.checked);
-    calcSkald();
+    calc();
   });
 </script>
 </body>

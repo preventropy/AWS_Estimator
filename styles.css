@@ -392,3 +392,17 @@ body {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
+
+/* ── Grouped results (New page) ── */
+.result-group {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-top: 14px;
+  padding-bottom: 2px;
+}
+.result-group:first-child { margin-top: 0; }
+.result-row.subtotal .label { font-weight: 600; color: var(--text); }
+.result-row.subtotal .value { color: var(--text-muted); }
