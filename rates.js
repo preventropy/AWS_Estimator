@@ -28,7 +28,8 @@ const SQL_WEB_RATES = {
 };
 
 /* ── Add-ons ─────────────────────────────────────────────────────── */
-const MARKETPLACE_UBUNTU_RATE = 0.05;  // $/hr on top of Linux
+const MARKETPLACE_RATE        = 0.05;  // $/hr AWS Marketplace fee on top of Linux
+const MARKETPLACE_UBUNTU_RATE = MARKETPLACE_RATE;  // name used by the Old page
 
 /* ── EBS storage, $/GB-month (updated by hand) ───────────────────── */
 const EBS_GP2_RATE = 0.10;
@@ -38,6 +39,15 @@ const EBS_GP3_RATE = 0.08;
 const EC2_HOURS  = 40;
 const LB_WEEKLY  = 0.35;   // load-balancing, per user per week
 const BW_WEEKLY  = 0.40;   // bandwidth, per user per week
+
+// Desktop presets for the New page. Same fields as SKALD_SYSTEMS below, plus optional:
+//   marketplace: true   adds the Marketplace fee (see desktopWeeklyMarketplace below)
+const DESKTOP_PRESETS = {
+  windows:      { name: 'Windows Desktop', instance: 'm5.xlarge', platform: 'windows', gp2: 1, gp3: 100 },
+  tsurugi:      { name: 'Tsurugi Desktop', instance: 'm5.xlarge', platform: 'linux',   gp2: 0, gp3: 545 },
+  cavemanLinux: { name: 'Caveman-Linux',   instance: 'm5.xlarge', platform: 'linux',   gp2: 0, gp3: 100, marketplace: true },
+  cavemanS:     { name: 'Caveman-S',       instance: 'm5.xlarge', platform: 'linux',   gp2: 0, gp3: 100, marketplace: true },
+};
 
 /* ── Skald servers (run 24/7) ────────────────────────────────────── */
 const SKALD_HOURS            = 168;
@@ -68,6 +78,24 @@ function hourlyRate(instance, platform) {
 // Weekly cost of storage billed monthly (monthly price ÷ 4 weeks), before tax.
 function weeklyStorage(gp2, gp3) {
   return (gp2 * EBS_GP2_RATE + gp3 * EBS_GP3_RATE) / WEEKS_PER_MONTH;
+}
+
+// Marketplace hours charged per week: the same 40 hr the desktop runs.
+// (The Caveman sheet's $19.27/wk charged 160 hr; that's under team review. 40 hr gives $12.73/wk.)
+const MARKETPLACE_HOURS = EC2_HOURS;
+
+// Desktop Marketplace fee per week, before tax ($0 if the preset has none).
+function desktopWeeklyMarketplace(preset) {
+  return preset.marketplace ? MARKETPLACE_RATE * MARKETPLACE_HOURS : 0;
+}
+
+// Desktop weekly price, per desktop: 40 hr compute + Marketplace + storage (monthly ÷ 4),
+// plus tax, to the cent. Load-balancing and bandwidth are added per desktop on the page.
+function desktopWeeklyPrice(preset) {
+  const pretax = hourlyRate(preset.instance, preset.platform) * EC2_HOURS
+               + desktopWeeklyMarketplace(preset)
+               + weeklyStorage(preset.gp2, preset.gp3);
+  return Math.round(pretax * (1 + TAX) * 100) / 100;
 }
 
 // Skald weekly price: 24/7 compute + bandwidth + storage, plus tax, rounded UP to the whole dollar.
